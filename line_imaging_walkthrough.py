@@ -45,7 +45,7 @@ size = su.getOptimumSize(IMSIZE)
 tclean_params = {
     'imsize': [size, size],
     'cell': ['0.04arcsec'],
-    'phasecenter': 'ICRS 23:18:23.60 -42.22.14.00000',
+    'phasecenter': 'ICRS 23:18:23.60 -42.22.14.00000', 
     'gridder':'mosaic',
     'deconvolver': 'multiscale',
     'robust': ROBUST,

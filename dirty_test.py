@@ -1,9 +1,14 @@
 from casatools import table
 # input vis name here ###########
-vis = 'NGC3351_12m_co21.ms'
+vis = 'NGC1365_12m_co21.ms'
 #################################
-name = vis + '.dirty_test'
+name = vis + '._test'
 column = 'data'  # or 'corrected' if you have CORRECTED_DATA column
+interactive = False
+niter = 0  # dirty image
+cell = '0.076arcsec'
+imsize = [600,460]
+field = 'NGC1365'
 
 tb = table()
 tb.open(vis + '/FIELD')
@@ -15,6 +20,8 @@ is_mosaic = len({tuple(phase_dir[:, i, 0]) for i in range(phase_dir.shape[1])}) 
 gridder = 'mosaic' if is_mosaic else 'standard'
 print('Gridder selected:', gridder)
 
+
+
 # --- Quick dirty image test ---
 tclean(
     vis=vis,
@@ -23,17 +30,17 @@ tclean(
     restfreq='230.538GHz',
     outframe='LSRK',
     nchan=1,
-    cell='0.5arcsec',
-    imsize=[256, 256],
+    cell=cell,
+    imsize=imsize,
     weighting='natural',
     gridder=gridder,
-    niter=0,
+    niter=niter,
     datacolumn=column,
     calcpsf=True,
     calcres=True,
-    restoration=False,
+    restoration=False, # doesn't make restored image for dirty
     pbcor=False,
-    interactive=False
+    interactive=interactive
 )
 
 # if continuum
@@ -44,9 +51,9 @@ tclean(
     field='',               # all fields
     spw='',                 # all SPWs
     specmode='mfs',         # continuum
-    niter=0,                # no cleaning, just check if data reads
-    imsize=[64,64],         # small image to save time
-    cell='1.0arcsec',       # coarse cell
+    niter=niter,                # no cleaning, just check if data reads
+    imsize=imsize,         # small image to save time
+    cell=cell,       # coarse cell
     weighting='natural',    # maximize sensitivity
-    interactive=False       # no GUI
+    interactive=interactive       # no GUI
 )

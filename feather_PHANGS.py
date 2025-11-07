@@ -1,9 +1,9 @@
 import os, shutil, glob
 
 lowres = 'NGC3351.fits'
-highres = 'NGC3351_12m_co21.image'
+highres = 'NGC3351_12m_co21_pbcorr_trimmed_k.fits'
 regridname = lowres.replace('.fits','regrid.image')
-highresnostokes = highres.replace('.image','_nostokes.image')
+highresnostokes = highres.replace('.fits','_nostokes.image')
 feathername = lowres.replace('.fits','_feather.image')
 jybeamname = lowres.replace('.fits','_jyperbeam.image')
 

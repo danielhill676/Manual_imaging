@@ -2,53 +2,37 @@ import os
 
 # File and target configuration
 vis_file = 'uid___A002_Xb945f7_X1b14.ms.split.cal'
+# Define target
 target_name = 'NGC7582'
 target_spw = '0'
 
-
 # Define paths
-split_vis = f"{vis_file}.target"
-contsub_vis = f"{vis_file}.target.contsub"
+split_vis = vis_file + '.target'
+contsub_vis = vis_file + '.target.contsub'
 image_basename = 'ngc7582'
 
-"""
-Continuum channels (line-free)
-You will need to manually set this to specific the continuum channels for each spectral window
-Note that SPWs 3 and 4 are line-free and can be used as-is. Only SPWs 1 and 2 channels need to be specified.
-[You should have already done this for yesterday's continuum imaging exercise, so you can reuse the same values here]
-"""
-# Continuum channels (line-free) NOTE: Usually after splitting it just contains target spw which is then spw 0
-CONT_CHANNELS = ('0: 229.029325914~229.138712154GHz; 229.572350465~230.236481211GHz' #, 1: 230.030519105~230.514943969GHz ; 230.675116706~231.23376796GHz ; 231.507233609~231.538486826GHz'
-                 )
-NITER = 100000  ### <- Update this for full clean ### 0 for dirty, many for full clean
-THRESHOLD = '2.1mJy'  ### <- Update this for full clean ### 0 for dirty, then use to get for full clean
-ROBUST = 0.5  # Feel free to play with the robust parameter to see how it affects the image
-INTERACTIVE = False  # Set to True if you want to run the imaging interactively
+# Continuum channels (line-free)
+CONT_CHANNELS = ('0: 229.029325914~229.138712154GHz; 229.572350465~230.236481211GHz',)
+
+NITER = 100000
+THRESHOLD = '2.1mJy'
+ROBUST = 0.5
+INTERACTIVE = True
 MASKTYPE = 'auto-multithresh'
 
-"""
-To image specific lines, you will need to specify the start channel, channel width, and number of channels for each chunk.
-You can also use units of frequency or velocity instead of channel numbers (see tclean documentation).
-The below numbers are just placeholders and will need to be updated based on the spectral line(s) in the data.
-"""
-LINE_CHUNKS = [
-    {'start': 186, 'width': 1, 'nchan': 113}
-]
+LINE_CHUNKS = [{'start': 186, 'width': 1, 'nchan': 113}]
+IMSIZE = 80
 
-IMSIZE = 2304
-
-
-from casatools import synthesisutils
-su = synthesisutils()
+# CASA 5.7: synthesisutils via casac
+su = casac.synthesisutils()
 size = su.getOptimumSize(IMSIZE)
-
 
 # Imaging parameters
 tclean_params = {
     'imsize': [size, size],
-    'cell': ['0.018arcsec'],
-    'phasecenter': 'ICRS 23:18:23.60 -42.22.14.00000', 
-    'gridder':'mosaic',
+    'cell': ['0.5arcsec'],
+    'phasecenter': 'ICRS 23:18:23.60 -42.22.14.00000',
+    'gridder': 'mosaic',
     'deconvolver': 'multiscale',
     'robust': ROBUST,
     'pbcor': True,
@@ -58,11 +42,13 @@ tclean_params = {
     'specmode': 'cube',
     'spw': '0',
     'threshold': THRESHOLD,
-    'weighting': 'briggsbwtaper',
+    'weighting': 'briggs',
     'restoringbeam': 'common',
-    'minbeamfrac': 0.3, # default is 0.3 reduce when automasking is not working well
-    'noisethreshold': 5.0 # default is 5.0 reduce when automasking is not working well
+    'minbeamfrac': 0.3,
+    'noisethreshold': 5.0
 }
+
+
 
 # --- Step-by-step walkthrough ---
 
@@ -128,12 +114,11 @@ if not os.path.isdir(f"{dirty_line_name}.image"):
            **dirty_params)
 
 ## 4. Make clean line images for each chunk
-print('Using contsub_vis = {}'.format(contsub_vis))
 for chunk_idx, chunk in enumerate(LINE_CHUNKS):
-    line_name = f"{image_basename}.spw0.chunk{chunk_idx}"
-    
-    if not os.path.isdir(f"{line_name}.image"):
-        print(f"Creating line cube for chunk {chunk_idx}")
+    line_name = image_basename + '.spw0.chunk' + str(chunk_idx)
+    os.system('rm -rf ' + line_name + '.image')  # remove if exists
+    if not os.path.isdir(line_name + '.image'):
+        print('Creating line cube for chunk {}'.format(chunk_idx))
         
         # Create a modified parameter dict for this chunk
         chunk_params = tclean_params.copy()
@@ -146,8 +131,13 @@ for chunk_idx, chunk in enumerate(LINE_CHUNKS):
         tb.open(contsub_vis)
         colnames = tb.colnames()
         tb.close()
-        column = 'corrected' if 'CORRECTED_DATA' in colnames else 'data'
-        print(f"Using {column.upper()} column for tclean")
+        
+        if 'CORRECTED_DATA' in colnames:
+            column = 'corrected'
+        else:
+            column = 'data'
+        
+        print('Using {} column for tclean'.format(column.upper()))
         
         tclean(vis=contsub_vis,
                imagename=line_name,

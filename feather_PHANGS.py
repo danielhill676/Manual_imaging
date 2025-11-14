@@ -69,7 +69,7 @@ c = 299792458.0
 k = 1.380649e-23
 # lowres beam in arcsec (replace if different)
 bmaj_low = imhead(lowres, mode='get', hdkey='bmaj')['value']
-print('BMAJ (arcsec)=', bmaj)
+print('lowres BMAJ (arcsec)=', bmaj_low)
 bmin_low = imhead(lowres, mode='get', hdkey='bmin')['value']
 print('lowres BMIN (arcsec)=', bmin_low)
 rad = math.pi/(180.0*3600.0)
@@ -80,7 +80,7 @@ factor_low = 2.0*k/((c/nu)**2) * 1e26 * omega_low
 print('lowres Jy/beam per K =', factor_low)
 
 immath(imagename=lowres,
-       expr='IM0 * {factor}'.format(factor=factor),
+       expr='IM0 * {factor}'.format(factor=factor_low),
        outfile=jybeamname_low
 )
 imhead(jybeamname_low, mode='put', hdkey='bunit', hdvalue='Jy/beam')

@@ -1,14 +1,14 @@
 from casatools import table
 # input vis name here ###########
-vis = 'NGC1365_12m_co21.ms'
+vis = 'uid___A002_Xe05f27_Xc6f6.ms'
 #################################
 name = vis + '._test'
-column = 'data'  # or 'corrected' if you have CORRECTED_DATA column
+column = 'corrected'  # or 'corrected' if you have CORRECTED_DATA column
 interactive = False
 niter = 0  # dirty image
-cell = '0.076arcsec'
-imsize = [600,460]
-field = 'NGC1365'
+cell = '0.02arcsec'
+imsize = [2160,2160]
+field = 'NGC7172'
 
 tb = table()
 tb.open(vis + '/FIELD')
@@ -57,3 +57,6 @@ tclean(
     weighting='natural',    # maximize sensitivity
     interactive=interactive       # no GUI
 )
+
+
+
